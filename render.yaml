@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: joker-elite-spx-bot
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --workers 2 --timeout 120
+    envVars:
+      - key: BOT_TOKEN
+        sync: false        # ستضعه يدوياً في لوحة Render
+      - key: CHAT_ID
+        sync: false        # ستضعه يدوياً في لوحة Render
+      - key: PORT
+        value: 10000

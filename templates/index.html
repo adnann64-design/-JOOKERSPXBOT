@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JOKER ELITE — SPX Signal Bot</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#020508;--bg2:#060d14;--bg3:#0a1520;--panel:#0d1e2e;--border:#0f3352;
+  --accent:#00e5ff;--gold:#ffd700;--bull:#00ff88;--bear:#ff3b5c;--neutral:#4a6fa5;
+  --text:#c8dff0;--dim:#4a6a8a;
+  --mono:'Share Tech Mono',monospace;--head:'Rajdhani',sans-serif;--body:'Cairo',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--body);overflow-x:hidden;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,255,.015) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,.015) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.07) 2px,rgba(0,0,0,.07) 4px);pointer-events:none;z-index:1}
+
+/* TICKER */
+.ticker-wrap{position:fixed;top:0;width:100%;background:var(--bg2);border-bottom:1px solid var(--border);overflow:hidden;height:30px;z-index:100;display:flex;align-items:center}
+.ticker-inner{display:flex;align-items:center;animation:tick 30s linear infinite;white-space:nowrap;gap:40px;padding-right:100%}
+@keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.ti{font-family:var(--mono);font-size:11px;color:var(--dim);display:flex;gap:8px}
+.ti .s{color:var(--accent)}.ti .u{color:var(--bull)}.ti .d{color:var(--bear)}
+
+/* NAV */
+nav{position:fixed;top:30px;width:100%;background:rgba(2,5,8,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);z-index:99;padding:0 40px;height:58px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:var(--head);font-size:21px;font-weight:700;letter-spacing:3px;color:var(--gold);text-shadow:0 0 20px rgba(255,215,0,.4);display:flex;align-items:center;gap:8px}
+.logo span{color:var(--accent)}
+.nav-r{display:flex;align-items:center;gap:20px}
+.live-badge{font-family:var(--mono);font-size:11px;color:var(--bull);display:flex;align-items:center;gap:6px}
+.pdot{width:7px;height:7px;border-radius:50%;background:var(--bull);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 6px var(--bull)}50%{opacity:.4;box-shadow:none}}
+.price-display{font-family:var(--mono);font-size:14px;color:#fff;background:var(--panel);border:1px solid var(--border);padding:6px 14px;border-radius:6px}
+.price-display span{color:var(--accent)}
+
+/* HERO */
+.hero{position:relative;min-height:100vh;padding-top:88px;display:flex;align-items:center;overflow:hidden}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 40%,rgba(0,100,180,.12) 0%,transparent 70%),radial-gradient(circle at 10% 80%,rgba(0,255,136,.06) 0%,transparent 50%)}
+.hero-content{position:relative;z-index:2;max-width:1100px;margin:0 auto;padding:0 40px;width:100%}
+.badge{display:inline-flex;align-items:center;gap:8px;background:rgba(0,229,255,.06);border:1px solid rgba(0,229,255,.2);border-radius:100px;padding:6px 18px;font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:2px;margin-bottom:28px;animation:fu .6s ease both}
+@keyframes fu{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.h1{font-family:var(--head);font-size:clamp(44px,7vw,88px);font-weight:700;line-height:1;letter-spacing:2px;color:#fff;animation:fu .6s .1s ease both}
+.h1 .g{color:var(--gold);text-shadow:0 0 30px rgba(255,215,0,.35)}
+.h1 .a{color:var(--accent)}
+.hsub{font-family:var(--head);font-size:clamp(16px,2.5vw,24px);color:var(--dim);letter-spacing:5px;text-transform:uppercase;margin:8px 0 24px;animation:fu .6s .2s ease both}
+.hdesc{font-size:15px;color:var(--text);max-width:540px;line-height:1.9;margin-bottom:44px;animation:fu .6s .3s ease both}
+.ctas{display:flex;gap:14px;flex-wrap:wrap;animation:fu .6s .4s ease both}
+.btn-p{background:var(--accent);color:#000;font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:2px;padding:14px 32px;border:none;border-radius:4px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:all .2s;box-shadow:0 0 24px rgba(0,229,255,.3);text-transform:uppercase}
+.btn-p:hover{background:#fff;box-shadow:0 0 40px rgba(0,229,255,.6);transform:translateY(-2px)}
+.btn-o{background:transparent;color:var(--text);font-family:var(--mono);font-size:13px;letter-spacing:2px;padding:14px 32px;border:1px solid var(--border);border-radius:4px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:all .2s;text-transform:uppercase}
+.btn-o:hover{border-color:var(--accent);color:var(--accent)}
+.stats{display:flex;gap:44px;margin-top:64px;padding-top:36px;border-top:1px solid var(--border);animation:fu .6s .5s ease both;flex-wrap:wrap}
+.sn{font-family:var(--head);font-size:34px;font-weight:700;color:var(--accent);display:block}
+.sl{font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:2px;text-transform:uppercase;margin-top:4px;display:block}
+
+/* MAIN PANEL */
+.panel-section{padding:80px 40px;max-width:1160px;margin:0 auto;position:relative;z-index:2}
+.sec-tag{font-family:var(--mono);font-size:11px;letter-spacing:4px;color:var(--accent);text-transform:uppercase;display:block;margin-bottom:10px;text-align:center}
+.sec-title{font-family:var(--head);font-size:clamp(26px,4vw,44px);font-weight:700;color:#fff;letter-spacing:2px;text-align:center;margin-bottom:48px}
+
+/* CONFIG CARD */
+.card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:36px;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent)}
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:24px}
+.flbl{font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-bottom:6px;display:block}
+input[type=text],input[type=password],select{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:11px 14px;color:var(--text);font-family:var(--mono);font-size:13px;outline:none;width:100%;transition:border-color .2s;direction:ltr}
+input[type=text]:focus,input[type=password]:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,229,255,.06)}
+input::placeholder{color:var(--dim);opacity:.5}
+select{appearance:none;cursor:pointer}
+select option{background:var(--panel)}
+
+/* Toggles */
+.tog-row{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:24px}
+.tog{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:9px 14px;cursor:pointer;transition:border-color .2s;user-select:none}
+.tog:hover{border-color:var(--accent)}
+.sw{width:34px;height:18px;background:var(--border);border-radius:9px;position:relative;transition:background .2s;flex-shrink:0}
+.sw.on{background:var(--accent)}
+.sw::after{content:'';position:absolute;width:12px;height:12px;background:#fff;border-radius:50%;top:3px;left:3px;transition:transform .2s}
+.sw.on::after{transform:translateX(16px)}
+.tlbl{font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--dim)}
+.btn-row{display:flex;gap:12px;flex-wrap:wrap}
+
+/* OUTPUT */
+.output{background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-top:24px}
+.out-hdr{background:var(--panel);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.out-title{font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--dim)}
+.out-status{font-family:var(--mono);font-size:11px;color:var(--dim);display:flex;align-items:center;gap:6px}
+.out-body{padding:28px;min-height:280px;display:flex;align-items:center;justify-content:center}
+
+/* States */
+.wait-st{text-align:center;color:var(--dim)}
+.wait-ico{font-size:44px;margin-bottom:12px;display:block;opacity:.3}
+.wait-txt{font-family:var(--mono);font-size:12px;letter-spacing:2px}
+.load-st{display:none;flex-direction:column;align-items:center;gap:18px}
+.load-st.show{display:flex}
+.spinner{width:44px;height:44px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.load-txt{font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:2px;animation:bl 1.5s infinite}
+@keyframes bl{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* Result */
+.res{display:none;width:100%}
+.res.show{display:block}
+.res-dir{font-family:var(--head);font-size:52px;font-weight:700;letter-spacing:4px;text-align:center;margin-bottom:18px;line-height:1}
+.res-dir.bull{color:var(--bull);text-shadow:0 0 20px rgba(0,255,136,.4)}
+.res-dir.bear{color:var(--bear);text-shadow:0 0 20px rgba(255,59,92,.4)}
+.rgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+.rcell{background:var(--bg3);border-radius:8px;padding:13px;border:1px solid var(--border)}
+.clbl{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;margin-bottom:5px}
+.cval{font-family:var(--mono);font-size:15px;font-weight:700;color:#fff}
+.cval.bull{color:var(--bull)}.cval.bear{color:var(--bear)}.cval.acc{color:var(--accent)}.cval.gold{color:var(--gold)}
+.score-lbl{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--dim);margin-bottom:6px}
+.score-bar{height:7px;background:var(--bg3);border-radius:4px;overflow:hidden;border:1px solid var(--border)}
+.score-fill{height:100%;border-radius:4px;transition:width 1s ease}
+.tg-prev{background:#17212b;border-radius:10px;padding:18px;font-family:var(--mono);font-size:12px;color:#e0e0e0;line-height:1.8;margin-top:18px;border:1px solid #2b5278;white-space:pre-wrap;word-break:break-all;max-height:360px;overflow-y:auto;position:relative}
+.tg-prev::before{content:'TELEGRAM PREVIEW';position:absolute;top:-9px;right:14px;background:#2b5278;color:#64b5f6;font-size:8px;letter-spacing:2px;padding:2px 10px;border-radius:100px}
+.send-row{margin-top:16px;display:flex;gap:10px;flex-wrap:wrap}
+
+/* STATUS PANEL */
+.status-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:32px}
+.st-card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:18px;transition:border-color .3s}
+.st-card:hover{border-color:var(--accent)}
+.st-lbl{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;margin-bottom:8px}
+.st-val{font-family:var(--head);font-size:24px;font-weight:700}
+
+/* LOG */
+.log-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-top:32px}
+.log-hdr{background:var(--panel);padding:11px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+.ldot{width:9px;height:9px;border-radius:50%}
+.log-body{padding:16px;max-height:200px;overflow-y:auto;font-family:var(--mono);font-size:11px;line-height:2}
+.le{display:flex;gap:14px;color:var(--dim);animation:lf .3s ease}
+@keyframes lf{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+.lt{color:var(--dim);opacity:.5;min-width:70px}
+.ltag{min-width:50px}
+.ltag.info{color:var(--accent)}.ltag.bull{color:var(--bull)}.ltag.bear{color:var(--bear)}.ltag.warn{color:var(--gold)}
+.lmsg{color:var(--text)}
+
+/* NOTIF */
+.notif{position:fixed;bottom:24px;left:24px;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px 22px;font-family:var(--mono);font-size:12px;display:flex;align-items:center;gap:10px;transform:translateY(100px);opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);z-index:999;max-width:340px}
+.notif.show{transform:translateY(0);opacity:1}
+.notif.ok{border-color:var(--bull)}.notif.err{border-color:var(--bear)}.notif.info{border-color:var(--accent)}
+
+/* FOOTER */
+footer{background:var(--bg2);border-top:1px solid var(--border);padding:36px;text-align:center;position:relative;z-index:2}
+.flogo{font-family:var(--head);font-size:22px;font-weight:700;letter-spacing:4px;color:var(--gold);margin-bottom:8px}
+.ftxt{font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:1px}
+
+/* Disclaimer */
+.disc{max-width:760px;margin:0 auto 64px;padding:0 40px;text-align:center;position:relative;z-index:2}
+.disc-box{background:rgba(255,215,0,.04);border:1px solid rgba(255,215,0,.2);border-radius:10px;padding:22px}
+.disc-t{font-family:var(--mono);font-size:10px;letter-spacing:3px;color:var(--gold);margin-bottom:8px}
+.disc-p{font-size:12px;color:var(--dim);line-height:1.8}
+
+@media(max-width:768px){
+  nav{padding:0 16px}
+  .hero-content,.panel-section{padding-left:16px;padding-right:16px}
+  .cgrid{grid-template-columns:1fr}
+  .status-grid{grid-template-columns:repeat(2,1fr)}
+  .rgrid{grid-template-columns:1fr 1fr}
+  .stats{gap:20px}
+}
+</style>
+</head>
+<body>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker-inner">
+    <span class="ti"><span class="s">SPX</span><span class="u" id="px">5,450.00</span><span class="u">▲</span></span>
+    <span class="ti"><span class="s">VIX</span><span id="vix">16.8</span></span>
+    <span class="ti"><span class="s">QQQ</span><span class="u">473.12</span></span>
+    <span class="ti"><span class="s">GOLD</span><span class="u">2,341</span></span>
+    <span class="ti"><span class="s">DXY</span><span class="d">103.4</span></span>
+    <span class="ti" style="color:var(--bull)">▌ JOKER ELITE • LIVE ▌</span>
+    <span class="ti"><span class="s">SPX</span><span class="u" id="px2">5,450.00</span><span class="u">▲</span></span>
+    <span class="ti"><span class="s">VIX</span><span>16.8</span></span>
+    <span class="ti"><span class="s">QQQ</span><span class="u">473.12</span></span>
+    <span class="ti"><span class="s">GOLD</span><span class="u">2,341</span></span>
+    <span class="ti"><span class="s">DXY</span><span class="d">103.4</span></span>
+    <span class="ti" style="color:var(--bull)">▌ JOKER ELITE • LIVE ▌</span>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">🃏 JOKER <span>ELITE</span></div>
+  <div class="nav-r">
+    <div class="price-display">SPX <span id="navpx">—</span></div>
+    <div class="live-badge"><div class="pdot"></div> LIVE</div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <div class="badge">⚡ JOKER ULTIMATE ELITE — INSTITUTIONAL SNIPER</div>
+    <h1 class="h1"><span class="g">SPX</span> OPTIONS<br>SIGNAL <span class="a">BOT</span></h1>
+    <p class="hsub">Powered by 12 Confluence Indicators</p>
+    <p class="hdesc">يحلل SPX بـ 12 مؤشراً تقنياً في الوقت الفعلي ويرسل إشارات CALL/PUT مع السترايك المثالي وأهداف TP/SL مباشرة لتيليقرامك.</p>
+    <div class="ctas">
+      <a href="#signal" class="btn-p">⚡ ابدأ الآن</a>
+      <button class="btn-o" onclick="loadStatus()">📡 حالة السوق</button>
+    </div>
+    <div class="stats">
+      <div><span class="sn">12</span><span class="sl">مؤشر تقني</span></div>
+      <div><span class="sn">17</span><span class="sl">نقطة تقاطع</span></div>
+      <div><span class="sn">5M</span><span class="sl">كل فحص</span></div>
+      <div><span class="sn">3R</span><span class="sl">هدف أقصى</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- SIGNAL PANEL -->
+<section class="panel-section" id="signal">
+  <span class="sec-tag">// SIGNAL ENGINE //</span>
+  <h2 class="sec-title">أرسل إشارة لتيليقرام</h2>
+
+  <div class="card">
+    <div class="cgrid">
+      <div>
+        <label class="flbl">Telegram Bot Token</label>
+        <input type="password" id="botToken" placeholder="1234567890:ABCDEFabcdef...">
+      </div>
+      <div>
+        <label class="flbl">Chat ID / Channel</label>
+        <input type="text" id="chatId" placeholder="-1001234567890 أو @channel">
+      </div>
+      <div>
+        <label class="flbl">وضع الدقة</label>
+        <select id="sensitivity">
+          <option value="7">High Accuracy (7+ نقاط) — موصى به</option>
+          <option value="4">Aggressive (4+ نقاط)</option>
+          <option value="10">Ultra Precision (10+ نقاط)</option>
+        </select>
+      </div>
+      <div>
+        <label class="flbl">الإطار الزمني</label>
+        <select id="tf">
+          <option value="5m">5 دقائق</option>
+          <option value="15m">15 دقيقة</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="tog-row">
+      <div class="tog" onclick="tog(this,'rsi')"><div class="sw on"></div><span class="tlbl">RSI FILTER</span></div>
+      <div class="tog" onclick="tog(this,'vol')"><div class="sw on"></div><span class="tlbl">WHALE VOL</span></div>
+      <div class="tog" onclick="tog(this,'adx')"><div class="sw on"></div><span class="tlbl">ADX</span></div>
+      <div class="tog" onclick="tog(this,'htf')"><div class="sw on"></div><span class="tlbl">HTF CONFIRM</span></div>
+      <div class="tog auto-tog" onclick="toggleAuto(this)"><div class="sw" id="autoSw"></div><span class="tlbl">AUTO SCAN</span></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-p" onclick="doAnalyze()">🔍 تحليل الآن</button>
+      <button class="btn-o" onclick="doTest()">🔗 اختبار التوكن</button>
+    </div>
+  </div>
+
+  <!-- OUTPUT -->
+  <div class="output" id="output">
+    <div class="out-hdr">
+      <span class="out-title">// SIGNAL OUTPUT</span>
+      <span class="out-status" id="outStatus"><div class="pdot" style="background:var(--dim)"></div>في انتظار التحليل...</span>
+    </div>
+    <div class="out-body" id="outBody">
+      <div class="wait-st" id="waitSt">
+        <span class="wait-ico">📡</span>
+        <p class="wait-txt">اضغط "تحليل الآن" لفحص السوق الحي</p>
+      </div>
+      <div class="load-st" id="loadSt">
+        <div class="spinner"></div>
+        <p class="load-txt" id="loadTxt">FETCHING MARKET DATA...</p>
+      </div>
+      <div class="res" id="resSt" style="width:100%">
+        <div id="resDir" class="res-dir bull">CALL ▲</div>
+        <div class="rgrid">
+          <div class="rcell"><div class="clbl">النوع</div><div class="cval gold" id="r-type">CALL</div></div>
+          <div class="rcell"><div class="clbl">السترايك</div><div class="cval acc" id="r-strike">—</div></div>
+          <div class="rcell"><div class="clbl">الانتهاء</div><div class="cval" id="r-exp">—</div></div>
+          <div class="rcell"><div class="clbl">TP1 (1R)</div><div class="cval bull" id="r-tp1">—</div></div>
+          <div class="rcell"><div class="clbl">TP2 (2R)</div><div class="cval bull" id="r-tp2">—</div></div>
+          <div class="rcell"><div class="clbl">TP3 (3R)</div><div class="cval bull" id="r-tp3">—</div></div>
+          <div class="rcell"><div class="clbl">Stop Loss</div><div class="cval bear" id="r-sl">—</div></div>
+          <div class="rcell"><div class="clbl">السعر</div><div class="cval acc" id="r-price">—</div></div>
+          <div class="rcell"><div class="clbl">RSI / ADX</div><div class="cval" id="r-ind">—</div></div>
+        </div>
+        <div><div class="score-lbl"><span>التقاطع</span><span id="r-sc">0/17</span></div><div class="score-bar"><div class="score-fill" id="r-fill" style="width:0%"></div></div></div>
+        <div class="tg-prev" id="tgPrev"></div>
+        <div class="send-row">
+          <button class="btn-p" id="sendBtn" onclick="doSend()">✈️ إرسال لتيليقرام</button>
+          <button class="btn-o" onclick="doCopy()">📋 نسخ</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATUS -->
+<section class="panel-section" id="status">
+  <span class="sec-tag">// MARKET STATUS //</span>
+  <h2 class="sec-title">حالة السوق الآن</h2>
+
+  <div class="status-grid" id="stGrid">
+    <div class="st-card"><div class="st-lbl">SPX Price</div><div class="st-val acc" id="st-px">—</div></div>
+    <div class="st-card"><div class="st-lbl">Bull Score</div><div class="st-val bull" id="st-bull">—</div></div>
+    <div class="st-card"><div class="st-lbl">Bear Score</div><div class="st-val bear" id="st-bear">—</div></div>
+    <div class="st-card"><div class="st-lbl">RSI</div><div class="st-val" id="st-rsi">—</div></div>
+    <div class="st-card"><div class="st-lbl">ADX</div><div class="st-val" id="st-adx">—</div></div>
+    <div class="st-card"><div class="st-lbl">Trend</div><div class="st-val" id="st-trend">—</div></div>
+    <div class="st-card"><div class="st-lbl">Signals Sent</div><div class="st-val gold" id="st-sent">0</div></div>
+    <div class="st-card"><div class="st-lbl">Last Scan</div><div class="st-val" style="font-size:16px" id="st-scan">—</div></div>
+  </div>
+
+  <div class="log-wrap">
+    <div class="log-hdr">
+      <div class="ldot" style="background:#ff5f56"></div>
+      <div class="ldot" style="background:#ffbd2e"></div>
+      <div class="ldot" style="background:var(--bull)"></div>
+      <span style="font-family:var(--mono);font-size:10px;color:var(--dim);margin-right:8px">joker_elite.log</span>
+    </div>
+    <div class="log-body" id="logBody">
+      <div class="le"><span class="lt">—</span><span class="ltag info">INIT</span><span class="lmsg">JOKER ULTIMATE ELITE — System Ready</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- DISCLAIMER -->
+<div class="disc">
+  <div class="disc-box">
+    <div class="disc-t">⚠️ تنبيه مهم</div>
+    <p class="disc-p">هذا البوت للأغراض التعليمية والتحليلية فقط. تداول الأوبشن ينطوي على مخاطر عالية. لا تخاطر إلا بما يمكنك تحمل خسارته.</p>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="flogo">🃏 JOKER ULTIMATE ELITE</div>
+  <p class="ftxt">SPX Options Signal Bot • 12 Confluence Indicators • High Accuracy Mode</p>
+</footer>
+
+<!-- NOTIF -->
+<div class="notif" id="notif">
+  <span id="nIco">✅</span>
+  <span id="nTxt">تم</span>
+</div>
+
+<script>
+// ─── State ──────────────────────────────
+let lastData = null;
+let autoEnabled = false;
+
+// ─── Toggle ─────────────────────────────
+function tog(el){ el.querySelector('.sw').classList.toggle('on') }
+
+async function toggleAuto(el){
+  const sw = document.getElementById('autoSw');
+  autoEnabled = !autoEnabled;
+  if(autoEnabled) sw.classList.add('on'); else sw.classList.remove('on');
+  const token  = document.getElementById('botToken').value.trim();
+  const chatId = document.getElementById('chatId').value.trim();
+  if(autoEnabled && (!token || !chatId)){
+    showNotif('الرجاء إدخال Token و Chat ID أولاً','err');
+    autoEnabled = false; sw.classList.remove('on'); return;
+  }
+  try{
+    await fetch('/api/auto',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({enabled:autoEnabled, token, chat_id:chatId})});
+    showNotif(autoEnabled?'✅ Auto Scan مفعّل — كل 5 دقائق':'⏹️ Auto Scan متوقف',autoEnabled?'ok':'info');
+    addLog(autoEnabled?'AUTO':'AUTO', autoEnabled?'Auto scan enabled':'Auto scan disabled');
+  }catch(e){ showNotif('خطأ في الاتصال','err') }
+}
+
+// ─── Analyze ────────────────────────────
+const loadMsgs = [
+  "FETCHING SPX DATA...", "CALCULATING ATR & VOLUME...",
+  "DETECTING SR LEVELS...", "RUNNING SMC ENGINE...",
+  "CHECKING RSI DIVERGENCE...", "COMPUTING CONFLUENCE SCORE...",
+  "SELECTING STRIKE PRICE...", "CALCULATING TP/SL..."
+];
+
+async function doAnalyze(){
+  const min = parseInt(document.getElementById('sensitivity').value)||7;
+  setUIState('loading');
+  addLog('INFO','Analysis triggered');
+  let li=0;
+  const iv = setInterval(()=>{
+    if(li<loadMsgs.length){document.getElementById('loadTxt').textContent=loadMsgs[li++]}
+  },350);
+
+  try{
+    const r = await fetch('/api/analyze',{method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({min_score:min})});
+    const d = await r.json();
+    clearInterval(iv);
+    if(!r.ok) throw new Error(d.error||'Server error');
+    handleResult(d);
+  }catch(e){
+    clearInterval(iv);
+    setUIState('wait','❌ '+e.message);
+    showNotif(e.message,'err');
+    addLog('ERR',e.message);
+  }
+}
+
+function handleResult(d){
+  updateStatus(d);
+  if(!d.signal){
+    setUIState('wait',`⏳ لا إشارة — Bull:${d.bull_score} Bear:${d.bear_score} | الحد:${document.getElementById('sensitivity').value}/17`);
+    addLog('WAIT',`No signal | Bull:${d.bull_score} Bear:${d.bear_score}`);
+    showNotif('لا توجد إشارة حالياً','info');
+    return;
+  }
+  lastData = d;
+  const b = d.signal==='BUY';
+  const sc = d.score; const pct = (sc/17)*100;
+  const col = sc>=12?'#00ff88':sc>=9?'#ffd700':'#00e5ff';
+
+  document.getElementById('resDir').className=`res-dir ${b?'bull':'bear'}`;
+  document.getElementById('resDir').textContent = b?'CALL ▲':'PUT ▼';
+  document.getElementById('r-type').textContent   = d.option_type;
+  document.getElementById('r-type').className     = `cval ${b?'bull':'bear'}`;
+  document.getElementById('r-strike').textContent = (d.strike||0).toLocaleString();
+  document.getElementById('r-exp').textContent    = d.expiry||'—';
+  document.getElementById('r-tp1').textContent    = fmt(d.tp1);
+  document.getElementById('r-tp2').textContent    = fmt(d.tp2);
+  document.getElementById('r-tp3').textContent    = fmt(d.tp3);
+  document.getElementById('r-sl').textContent     = fmt(d.sl);
+  document.getElementById('r-price').textContent  = fmt(d.price);
+  document.getElementById('r-ind').textContent    = `${d.rsi} / ${d.adx}`;
+  document.getElementById('r-sc').textContent     = `${sc}/17 — ${d.conf}`;
+  document.getElementById('r-fill').style.cssText = `width:${pct}%;background:${col}`;
+
+  // TG preview
+  document.getElementById('tgPrev').textContent = buildMsg(d);
+
+  setUIState('result', b?'إشارة شراء ✅':'إشارة بيع 🔴', b);
+  addLog(d.signal,`${d.signal} | SPX:${d.price} | Strike:${d.strike} | Score:${sc}/17`);
+  showNotif(`إشارة ${b?'CALL 📈':'PUT 📉'} — Score:${sc}/17`, b?'ok':'info');
+}
+
+function buildMsg(d){
+  const b=d.signal==='BUY', e=b?'🟢':'🔴';
+  const now=new Date().toLocaleString('en-US',{timeZone:'America/New_York',hour12:false}).replace(',','')+' ET';
+  const tr=(d.triggers||[]).join(' | ')||'—';
+  return `${e}${e}${e} إشارة جديدة — SPX Options ${e}${e}${e}
+
+${b?'📈 CALL شراء':'📉 PUT شراء'}
+🕐 ${now}
+💰 SPX الحالي: ${d.price?.toLocaleString()||'—'}
+
+━━━━━━━━━━━━━━━━━━━━━━━
+📋 تفاصيل العقد:
+• النوع:      ${d.option_type}
+• السترايك:   ${(d.strike||0).toLocaleString()}
+• الانتهاء:   ${d.expiry}
+
+━━━━━━━━━━━━━━━━━━━━━━━
+🎯 الأهداف والوقف:
+✅ TP1 (1R):  ${fmt(d.tp1)}
+✅ TP2 (2R):  ${fmt(d.tp2)}
+✅ TP3 (3R):  ${fmt(d.tp3)}
+🛑 SL:        ${fmt(d.sl)}
+📐 المخاطرة:  ${fmt(d.risk)} نقطة
+
+━━━━━━━━━━━━━━━━━━━━━━━
+📊 المؤشرات:
+• Score: ${d.score}/17 — ${d.conf}
+• RSI: ${d.rsi}  |  ADX: ${d.adx}
+
+⚡ المحفزات: ${tr}
+
+━━━━━━━━━━━━━━━━━━━━━━━
+⚠️ لا تخاطر بأكثر من 2% من الحساب
+🤖 JOKER ULTIMATE ELITE`;
+}
+
+// ─── Send ───────────────────────────────
+async function doSend(){
+  const token  = document.getElementById('botToken').value.trim();
+  const chatId = document.getElementById('chatId').value.trim();
+  if(!token||!chatId){ showNotif('الرجاء إدخال Token و Chat ID','err'); return }
+  if(!lastData){ showNotif('لا توجد إشارة','err'); return }
+  const btn=document.getElementById('sendBtn'); btn.disabled=true; btn.textContent='⏳...';
+  try{
+    const r=await fetch('/api/send',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({token,chat_id:chatId,signal:lastData})});
+    const d=await r.json();
+    if(d.ok){ showNotif('✅ تم الإرسال لتيليقرام!','ok'); addLog('SENT',`Sent to ${chatId}`); loadStatus(); }
+    else throw new Error(d.error||'Telegram error');
+  }catch(e){ showNotif('❌ '+e.message,'err') }
+  finally{ btn.disabled=false; btn.textContent='✈️ إرسال لتيليقرام' }
+}
+
+async function doTest(){
+  const token=document.getElementById('botToken').value.trim();
+  if(!token){ showNotif('الرجاء إدخال Token','err'); return }
+  try{
+    const r=await fetch('/api/test',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token})});
+    const d=await r.json();
+    if(d.ok){ showNotif(`✅ متصل: @${d.username}`,'ok'); addLog('TEST',`Connected @${d.username}`) }
+    else throw new Error(d.error);
+  }catch(e){ showNotif('❌ '+e.message,'err') }
+}
+
+function doCopy(){
+  const t=document.getElementById('tgPrev').textContent;
+  if(!t){ showNotif('لا توجد رسالة','err'); return }
+  navigator.clipboard.writeText(t).then(()=>showNotif('📋 تم النسخ','info'));
+}
+
+// ─── Status ─────────────────────────────
+async function loadStatus(){
+  try{
+    const r=await fetch('/api/status'); const d=await r.json();
+    document.getElementById('st-px').textContent   = d.price?fmt(d.price):'—';
+    document.getElementById('st-bull').textContent = d.bull_score+'/17';
+    document.getElementById('st-bear').textContent = d.bear_score+'/17';
+    document.getElementById('st-rsi').textContent  = d.rsi;
+    document.getElementById('st-adx').textContent  = d.adx;
+    document.getElementById('st-trend').textContent= d.trend_up?'📈 صاعد':'📉 هابط';
+    document.getElementById('st-trend').style.color= d.trend_up?'var(--bull)':'var(--bear)';
+    document.getElementById('st-sent').textContent = d.signals_sent;
+    document.getElementById('st-scan').textContent = d.last_scan||'—';
+    // update nav
+    if(d.price){ const pv=fmt(d.price); document.getElementById('navpx').textContent=pv; document.getElementById('px').textContent=pv; document.getElementById('px2').textContent=pv; }
+    // logs
+    if(d.log?.length){
+      const lb=document.getElementById('logBody'); lb.innerHTML='';
+      d.log.forEach(e=>{
+        const tc=e.tag==='BUY'?'bull':e.tag==='SELL'?'bear':e.tag==='ERR'?'bear':'info';
+        lb.innerHTML+=`<div class="le"><span class="lt">${e.time}</span><span class="ltag ${tc}">${e.tag}</span><span class="lmsg">${e.msg}</span></div>`;
+      });
+      lb.scrollTop=lb.scrollHeight;
+    }
+  }catch{}
+}
+
+// ─── UI helpers ─────────────────────────
+function setUIState(state, msg='', bull=true){
+  document.getElementById('waitSt').style.display='none';
+  document.getElementById('loadSt').className='load-st';
+  document.getElementById('resSt').className='res';
+  if(state==='loading'){ document.getElementById('loadSt').className='load-st show'; document.getElementById('outStatus').innerHTML='<div class="pdot"></div> جاري التحليل...' }
+  else if(state==='wait'){
+    document.getElementById('waitSt').style.display='block';
+    document.getElementById('waitSt').innerHTML=`<span class="wait-ico">⏳</span><p class="wait-txt">${msg||'اضغط تحليل الآن'}</p>`;
+    document.getElementById('outStatus').innerHTML='<div class="pdot" style="background:var(--dim)"></div> '+( msg||'انتظار...' );
+  }
+  else if(state==='result'){
+    document.getElementById('resSt').className='res show';
+    const c=bull?'var(--bull)':'var(--bear)';
+    document.getElementById('outStatus').innerHTML=`<div class="pdot" style="background:${c}"></div> ${msg}`;
+  }
+}
+
+function fmt(n){ return n!=null?n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}):'—' }
+
+function showNotif(txt,type='ok'){
+  const n=document.getElementById('notif'); const ico={ok:'✅',err:'❌',info:'📡'};
+  document.getElementById('nIco').textContent=ico[type]||'📡';
+  document.getElementById('nTxt').textContent=txt;
+  n.className=`notif ${type} show`; setTimeout(()=>n.className=`notif ${type}`,4000);
+}
+
+function addLog(tag,msg){
+  const lb=document.getElementById('logBody');
+  const now=new Date().toTimeString().slice(0,8);
+  const tc=tag==='BUY'||tag==='SENT'?'bull':tag==='SELL'||tag==='ERR'?'bear':'info';
+  lb.innerHTML+=`<div class="le"><span class="lt">${now}</span><span class="ltag ${tc}">${tag}</span><span class="lmsg">${msg}</span></div>`;
+  lb.scrollTop=lb.scrollHeight;
+}
+
+function updateStatus(d){
+  if(!d) return;
+  if(d.price){ const p=fmt(d.price); document.getElementById('navpx').textContent=p; ['px','px2'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent=p }); }
+  if(d.bull_score!=null) document.getElementById('st-bull').textContent=d.bull_score+'/17';
+  if(d.bear_score!=null) document.getElementById('st-bear').textContent=d.bear_score+'/17';
+  if(d.rsi)  document.getElementById('st-rsi').textContent=d.rsi;
+  if(d.adx)  document.getElementById('st-adx').textContent=d.adx;
+  if(d.trend_up!=null){ document.getElementById('st-trend').textContent=d.trend_up?'📈 صاعد':'📉 هابط'; document.getElementById('st-trend').style.color=d.trend_up?'var(--bull)':'var(--bear)' }
+}
+
+// Auto-refresh status every 30s
+setInterval(loadStatus, 30000);
+loadStatus();
+</script>
+</body>
+</html>
