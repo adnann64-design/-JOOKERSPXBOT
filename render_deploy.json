@@ -1,0 +1,26 @@
+{
+  "type": "web_service",
+  "name": "joker-elite-spx-bot",
+  "runtime": "python",
+  "repo": "https://github.com/adnann64-design/-JOOKERSPXBOT",
+  "branch": "main",
+  "buildCommand": "pip install -r requirements.txt",
+  "startCommand": "gunicorn app:app --workers 2 --timeout 120",
+  "envVars": [
+    {
+      "key": "BOT_TOKEN",
+      "value": "8633288186:AAFtsDSgJwh_sH2m0-6kolywdBhBf8L3Un4"
+    },
+    {
+      "key": "CHAT_ID",
+      "value": "5221853849"
+    },
+    {
+      "key": "PORT",
+      "value": "10000"
+    }
+  ],
+  "region": "oregon",
+  "plan": "free",
+  "autoDeploy": true
+}
